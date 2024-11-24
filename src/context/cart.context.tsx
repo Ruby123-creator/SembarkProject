@@ -28,7 +28,8 @@ interface State {
 // Cart Actions
 type Action =
   | { type: 'ADD_ITEM_WITH_QUANTITY'; item: Item; quantity: number }
-  | { type: 'REMOVE_ITEM_OR_QUANTITY'; id: Item['id']; quantity?: number };
+  | { type: 'REMOVE_ITEM_OR_QUANTITY'; id: Item['id']; quantity?: number }
+  | { type: 'RESET_CART' };
 
 // Initial State
 const initialState: State = {
@@ -79,6 +80,10 @@ const removeItemOrQuantity = (items: Item[], id: Item['id'], quantity: number = 
     return acc;
   }, []);
 
+  function getItem(items: Item[], id: Item['id']) {
+    return (items||[]).find((item) => item.id === id);
+  }
+  
 const generateFinalState = (state: State, items: Item[]) => {
   const totalItems = calculateTotalItems(items);
   const total = calculateTotal(items);
@@ -105,6 +110,9 @@ const cartReducer = (state: State, action: Action): State => {
       const items = removeItemOrQuantity(state.items, action.id, action.quantity);
       return generateFinalState(state, items);
     }
+    case 'RESET_CART':
+
+      return initialState;
     default:
       return state;
   }
@@ -115,6 +123,8 @@ interface CartContextState extends State {
   addItemToCart: (item: Item, quantity: number) => void;
   removeItemFromCart: (id: Item['id'], quantity?: number) => void;
   getItemFromCart: (id: Item['id']) => Item | undefined;
+  isInCart: (id: Item['id']) => boolean;
+  resetCart: () => void;
 }
 
 // Context Initialization
@@ -149,6 +159,11 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
     dispatch({ type: 'REMOVE_ITEM_OR_QUANTITY', id, quantity });
   };
 
+  const resetCart = () => dispatch({ type: 'RESET_CART' });
+  const isInCart = useCallback(
+    (id: Item['id']) => !!getItem(state.items, id),
+    [state.items]
+  );
   // Get Item
   const getItemFromCart = useCallback(
     (id: Item['id']) => state.items.find((item) => item.id === id),
@@ -162,8 +177,10 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
       addItemToCart,
       removeItemFromCart,
       getItemFromCart,
+      isInCart,
+      resetCart
     }),
-    [state, getItemFromCart]
+    [state, getItemFromCart, isInCart,]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
