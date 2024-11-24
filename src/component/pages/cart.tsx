@@ -13,14 +13,7 @@ const CartPage: React.FC = () => {
   };
 
   // Handle decrement of quantity
-  const handleDecrement = (id: string | number) => {
-    const item = items.find((item) => item.id === id);
-    if (item && item.quantity! > 1) {
-      addItemToCart(item, -1); // Decrement the quantity by 1
-    } else {
-      removeItemFromCart(id); // Remove the item if quantity is 1
-    }
-  };
+ 
 
   // Handle remove item from cart
   const handleRemove = (id: string | number) => {
